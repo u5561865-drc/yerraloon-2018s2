@@ -30,8 +30,9 @@ def readFromIMU(bno, buffer, bufferIndex):
     TemStr = '{0:0.2F}'.format(
           temp_c)
 
-    combStr = str(datetime.datetime.now().time())[0:11] + ',\t' + GyrStr + ',\t' + AccStr + ',\t' + DirStr + ',\t' + TemStr + '\n'
-
+    combStr = str(datetime.datetime.now().time())[0:11] + ',\t' + GyrStr + \
+                  ',\t' + AccStr + ',\t' + DirStr + ',\t' + TemStr + '\n'
+    print(combStr)
     buffer.append(combStr)
 
     return (buffer, (bufferIndex+1))
