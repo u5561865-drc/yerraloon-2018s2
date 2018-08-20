@@ -90,11 +90,31 @@ def main(argv):
     time_fmt = '%H:%M:%S.%f'
     reference_time = datetime.datetime.strptime(tstamp[0], time_fmt)
     elapsed_time = []
+    average_data_rate = 0
+    time_since_previous = []
     for index in i:
         elapsed_time.append((datetime.datetime.strptime(tstamp[index],\
                                                        time_fmt) -\
-                            reference_time).total_seconds())
-        
+                             reference_time).total_seconds())
+        # I want to calculate the time difference between each piece of 
+        # data here, and spit out an average frequency
+        # also keep the times between each piece of data, as this will allow
+        # for me space datapoints correctly on the graph
+        if index == 0:
+            time_since_previous.append(0)
+        else:   
+            time_since_previous.append((datetime.datetime.strptime(tstamp[index],\
+                                                            time_fmt)) -\
+                                  datetime.datetime.strptime(tstamp[index-1],\
+                                                       time_fmt))
+            average_data_rate += (time_since_previous[index].microseconds)
+
+    average_data_rate = average_data_rate / total_lines
+    # convert to Hz
+    average_data_rate = (1000000 / average_data_rate)
+    average_data_rate_string = "Average IMU read rate: " +\
+                               str(round(average_data_rate, 3)) +\
+                               " (Hz)"
     if argv[0] == 'q':
         # generate plotting data
         w_data = []
@@ -109,7 +129,7 @@ def main(argv):
 
         # draw all quaternions 
         plt.subplot(411)
-        plt.title("Orientation in quaternions")
+        plt.title("Orientation in quaternions\n"+average_data_rate_string)
         plt.plot(elapsed_time, w_data)
         plt.ylabel("w")
         plt.subplot(412)
@@ -139,15 +159,15 @@ def main(argv):
         
         # draw all euler angles     
         plt.subplot(311)
-        plt.title("Orientation in Euler angles")
+        plt.title("Orientation in Euler angles\n"+average_data_rate_string)
         plt.plot(elapsed_time, eul_x)
         plt.ylabel("roll (degrees)")
         plt.subplot(312)
         plt.plot(elapsed_time, eul_y)
-        plt.ylabel("roll (pitch)")
+        plt.ylabel("pitch (degrees)")
         plt.subplot(313)
         plt.plot(elapsed_time, eul_z)
-        plt.ylabel("roll (yaw)")
+        plt.ylabel("yaw (degrees)")
         plt.xlabel("elapsed seconds (s)")
 
     
