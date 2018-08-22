@@ -1,9 +1,14 @@
+# TODO
+# change all usage of quaternions to the quaternion object
+# implement single data point visualisation
+# implement control for multi data point playback
+
 import csv
 import math
 import sys
-import matplotlib.pyplot as plt
 import datetime
 from pyquaternion import Quaternion
+from vpython import *
 
 # each quaternion is stored in the form (w,    x,    y,    z)
 #                                       q[0], q[1], q[2], q[3]
@@ -140,9 +145,28 @@ def buildQuaternionObjects(quaternions):
         quat_OBJs.append(Quaternion(q))
     return quat_OBJs
 
-def calculatePositionFromOrientation(quaternion_OBJ, line_length):
-    position = quaternion_OBJ.rotate((0, 0, line_length))
+def calculatePendulumPosition(quaternion_OBJ, line_length):
+    position = quaternion_OBJ.rotate((0, 0, -line_length))
     return position
+
+def build3DVisualisation(balloon_train_length):
+    main_scene = canvas(title="IMU 3D Orientation", height = 900, width = 900)
+    main_scene.range = balloon_train_length + 3
+    payload = box(pos = vector(0, -(balloon_train_length / 2), 0),\
+                  size = vector(2,1,1))
+    balloon_train = arrow(
+                        pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
+                        axis = vector(0, -balloon_train_length, 0),\
+                        shaftwidth = 0.2)
+    balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
+                     radius = 1)
+
+    return (main_scene)
+
+def playback():
+    for index in indices:
+        time.sleep(time_deltas[index].total_seconds())
+        # updateVisualisation(quaternions.)
 
 # To read a csv
 # 1. discard first line
@@ -158,10 +182,9 @@ def main(argv):
     file = open(argv[0])
     
     (total_lines, indices, timestamps, gyro_data,\
-     acc_data, quaternions, temperatures) = parseFile(file)
+     acc_data, quaternions, temperatures)          = parseFile(file)
 
     # euler_angles = calculateEulerAngles(quaternions)
-    
     # axis_angles = calculateAxisAngles(quaternions)
     
     (reference_time, average_time_delta,\
@@ -169,7 +192,8 @@ def main(argv):
 
     quaternion_OBJs = buildQuaternionObjects(quaternions)
 
-
+    # need to calculate position and then rotate representation at this point, around the normal vevtor to the horizontal plane
+    main_scene = build3DVisualisation(8)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
