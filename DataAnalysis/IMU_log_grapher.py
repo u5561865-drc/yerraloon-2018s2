@@ -6,7 +6,7 @@ import datetime
 
 # Method for converting from quaternions to Euler angles, taken from:
 # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-def quaternion_to_euler_angle(w, x, y, z):
+def quaternion_to_euler_angle(x, y, z, w):
     ysqr = y * y
     
     t0 = +2.0 * (w * x + y * z)
@@ -150,9 +150,10 @@ def main(argv):
         # x = qx / sqrt(1-qw*qw)
         # y = qy / sqrt(1-qw*qw)
         # z = qz / sqrt(1-qw*qw)
-    eq_part = math.sqrt(1 - (w_data[index] * w_data[index]))
     for index in i:
+        eq_part = math.sqrt(1 - (w_data[index] * w_data[index]))
         ax_angle.append(2 * math.acos(w_data[index]))
+        # need to handle the potential divide be zero here
         ax_x.append(x_data[index] / eq_part)
         ax_y.append(y_data[index] / eq_part)
         ax_z.append(z_data[index] / eq_part)
