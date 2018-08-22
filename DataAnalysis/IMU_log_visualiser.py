@@ -99,11 +99,19 @@ def calculateAxisAngles(quaternions):
     axis_angles = []
     for q in quaternions:
         eq_part = math.sqrt(1 - (q[3] * q[3]))
+        angle = 2 * math.acos(q[3])
         # need to handle potential divide by zero here
-        axis_angles.append(2 * math.acos(q[3]),\
-                           q[0] / eq_part,\
-                           q[1] / eq_part,\
-                           q[2] / eq_part)
+        # axis may need to be normalised
+        if eq_part < 0.001:
+            axis_angles.append((angle,\
+                               q[0],\
+                               q[1],\
+                               q[2]))
+        else:
+            axis_angles.append((angle,\
+                               q[0] / eq_part,\
+                               q[1] / eq_part,\
+                               q[2] / eq_part))
     return axis_angles
 
 def calculateTimeDeltas(timestamps):
@@ -120,7 +128,7 @@ def calculateTimeDeltas(timestamps):
         cumulative_elapsed_times.append((current_datetime -\
                                          reference_time).total_seconds())
         if index == 0:
-            time_deltas.append(0)
+            time_deltas.append(datetime.timedelta(0))
         else:
             time_delta = (current_datetime - previous_datetime)
             time_deltas.append(time_delta)
@@ -145,28 +153,39 @@ def buildQuaternionObjects(quaternions):
         quat_OBJs.append(Quaternion(q))
     return quat_OBJs
 
-def calculatePendulumPosition(quaternion_OBJ, line_length):
-    position = quaternion_OBJ.rotate((0, 0, -line_length))
-    return position
-
 def build3DVisualisation(balloon_train_length):
     main_scene = canvas(title="IMU 3D Orientation", height = 900, width = 900)
     main_scene.range = balloon_train_length + 3
+    main_scene.forward=vector(0.5, -0.5, 1)
+
+    objects = []
     payload = box(pos = vector(0, -(balloon_train_length / 2), 0),\
                   size = vector(2,1,1))
+    objects.append(payload)
     balloon_train = arrow(
                         pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
                         axis = vector(0, -balloon_train_length, 0),\
                         shaftwidth = 0.2)
+    objects.append(balloon_train)
     balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
                      radius = 1)
+    objects.append(balloon)
+    return (main_scene, objects)
 
-    return (main_scene)
+def updateVisualisationObjects(quaternion, objects, balloon_train_length):
+    # payload - objects[0]
+    # all motion is currently being carried out in 1 dimension - this needs to 
+    # be fixed. Position is also currently not being updated
+    objects[0].rotate()
+    # objects[0].pos = 
+    return objects
 
-def playback():
+def playback(indices, time_deltas, quaternion_OBJs,\
+             objects, balloon_train_length):
     for index in indices:
         time.sleep(time_deltas[index].total_seconds())
-        # updateVisualisation(quaternions.)
+        updateVisualisationObjects(quaternion_OBJs[index], objects,\
+                                   balloon_train_length)
 
 # To read a csv
 # 1. discard first line
@@ -180,12 +199,13 @@ def playback():
     # put temp into list
 def main(argv):
     file = open(argv[0])
+    balloon_train_length = int(argv[1])
     
     (total_lines, indices, timestamps, gyro_data,\
      acc_data, quaternions, temperatures)          = parseFile(file)
 
     # euler_angles = calculateEulerAngles(quaternions)
-    # axis_angles = calculateAxisAngles(quaternions)
+    axis_angles = calculateAxisAngles(quaternions)
     
     (reference_time, average_time_delta,\
      time_deltas, cumulative_elapsed_times) = calculateTimeDeltas(timestamps)
@@ -193,7 +213,12 @@ def main(argv):
     quaternion_OBJs = buildQuaternionObjects(quaternions)
 
     # need to calculate position and then rotate representation at this point, around the normal vevtor to the horizontal plane
-    main_scene = build3DVisualisation(8)
+    (main_scene, objects) = build3DVisualisation(balloon_train_length)
+    
+    playback(indices, time_deltas, quaternion_OBJs,\
+             objects, balloon_train_length)
+    
+    print("finished playback")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
