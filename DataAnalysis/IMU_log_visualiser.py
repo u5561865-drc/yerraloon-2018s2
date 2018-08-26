@@ -88,30 +88,27 @@ def parseFile(file):
 
 def calculateEulerAngles(quaternions):
     euler_angles = []
-    
     for q in quaternions:
-        eul_temp = quaternionToEulerAngle(q)
-        euler_angles.append((eul_temp[0], eul_temp[1], eul_temp[2]))
-    
+        euler_angles.append(quaternionToEulerAngle(q[0], q[1], q[2], q[3]))
     return euler_angles
 
 def calculateAxisAngles(quaternions):
     axis_angles = []
     for q in quaternions:
-        eq_part = math.sqrt(1 - (q[3] * q[3]))
-        angle = 2 * math.acos(q[3])
+        eq_part = math.sqrt(1 - (q[0] * q[0]))
+        angle = 2 * math.acos(q[0])
         # need to handle potential divide by zero here
         # axis may need to be normalised
         if eq_part < 0.001:
             axis_angles.append((angle,\
-                               q[0],\
                                q[1],\
-                               q[2]))
+                               q[2],\
+                               q[3]))
         else:
             axis_angles.append((angle,\
-                               q[0] / eq_part,\
                                q[1] / eq_part,\
-                               q[2] / eq_part))
+                               q[2] / eq_part,\
+                               q[3] / eq_part))
     return axis_angles
 
 def calculateTimeDeltas(timestamps):
@@ -172,12 +169,15 @@ def build3DVisualisation(balloon_train_length):
     objects.append(balloon)
     return (main_scene, objects)
 
-def updateVisualisationObjects(quaternion, objects, balloon_train_length):
+def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
     # payload - objects[0]
-    # all motion is currently being carried out in 1 dimension - this needs to 
-    # be fixed. Position is also currently not being updated
-    objects[0].rotate()
-    # objects[0].pos = 
+    rotation_axis = quaternion_OBJ.get_axis(undefined=[0, 1, 0])
+    rotation_angle = quaternion_OBJ.radians
+    objects[0].rotate(angle = rotation_angle,\
+                      axis = vector(rotation_axis[0],\
+                                    rotation_axis[1],\
+                                    rotation_axis[2]))
+    # objects[0].rotate(angle = rotation_angle)
     return objects
 
 def playback(indices, time_deltas, quaternion_OBJs,\
@@ -204,7 +204,7 @@ def main(argv):
     (total_lines, indices, timestamps, gyro_data,\
      acc_data, quaternions, temperatures)          = parseFile(file)
 
-    # euler_angles = calculateEulerAngles(quaternions)
+    euler_angles = calculateEulerAngles(quaternions)
     axis_angles = calculateAxisAngles(quaternions)
     
     (reference_time, average_time_delta,\
