@@ -152,27 +152,31 @@ def buildQuaternionObjects(quaternions):
 
 def build3DVisualisation(balloon_train_length):
     main_scene = canvas(title="IMU 3D Orientation", height = 900, width = 900)
-    main_scene.range = balloon_train_length + 3
+    # main_scene.range = balloon_train_length + 3
+    main_scene.range = 3
     main_scene.forward=vector(0.5, -0.5, 1)
 
     objects = []
-    payload = box(pos = vector(0, -(balloon_train_length / 2), 0),\
+    # payload = box(pos = vector(0, -(balloon_train_length / 2), 0),\
+    payload = box(pos = vector(0, 0, 0),\
                   size = vector(2,1,1))
     objects.append(payload)
-    balloon_train = arrow(
-                        pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
-                        axis = vector(0, -balloon_train_length, 0),\
-                        shaftwidth = 0.2)
-    objects.append(balloon_train)
-    balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
-                     radius = 1)
-    objects.append(balloon)
+    # balloon_train = arrow(
+                        # pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
+                        # axis = vector(0, -balloon_train_length, 0),\
+                        # shaftwidth = 0.2)
+    # objects.append(balloon_train)
+    # balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
+                     # radius = 1)
+    # objects.append(balloon)
     return (main_scene, objects)
 
 def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
     # payload - objects[0]
     rotation_axis = quaternion_OBJ.get_axis(undefined=[0, 1, 0])
     rotation_angle = quaternion_OBJ.radians
+    objects[0].up = vector(0, 1, 0)
+    objects[0].axis = vector(2, 0, 0)
     objects[0].rotate(angle = rotation_angle,\
                       axis = vector(rotation_axis[0],\
                                     rotation_axis[1],\
