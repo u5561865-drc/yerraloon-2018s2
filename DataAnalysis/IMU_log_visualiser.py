@@ -159,7 +159,7 @@ def build3DVisualisation(balloon_train_length):
     objects = []
     # payload = box(pos = vector(0, -(balloon_train_length / 2), 0),\
     payload = box(pos = vector(0, 0, 0),\
-                  size = vector(2,1,1))
+                  size = vector(4, 0.1, 2))
     objects.append(payload)
     # balloon_train = arrow(
                         # pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
@@ -169,6 +169,14 @@ def build3DVisualisation(balloon_train_length):
     # balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
                      # radius = 1)
     # objects.append(balloon)
+
+    x_axis = arrow(color = color.red, axis = vector(-3, 0, 0),\
+                   shaftwidth = 0.02, fixedwidth = 0.01)
+    y_axis = arrow(color = color.green, axis = vector(0, 3, 0),\
+                   shaftwidth = 0.02, fixedwidth = 1)
+    z_axis = arrow(color = color.blue, axis=vector(0, 0, -3),\
+                   shaftwidth = 0.02, fixedwidth = 1)
+
     return (main_scene, objects)
 
 def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
