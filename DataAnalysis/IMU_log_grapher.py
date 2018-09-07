@@ -128,12 +128,13 @@ def calculateTimeDeltas(timestamps):
         previous_datetime = current_datetime
         index += 1
 
-    average_time_delta = average_time_delta / index
+    # average_time_delta = average_time_delta / index
     # convert to Hz
     # average_time_delta_Hz = (1000000 / average_time_delta)
     # average_data_rate_string = "Average IMU read rate: " +\
                                # str(round(average_time_delta_Hz, 3)) +\
                                # " (Hz)"
+    # print(average_data_rate_string)
 
     return (reference_time, average_time_delta,\
             time_deltas, cumulative_elapsed_times)
@@ -235,10 +236,10 @@ def main(argv):
      time_deltas, cumulative_elapsed_times) = calculateTimeDeltas(timestamps)
     
     # convert data rate to Hz
-    average_time_delta_Hz = (1000000 / average_time_delta)
-    average_data_rate_string = "Average IMU read rate: " +\
-                               str(round(average_time_delta_Hz, 3)) +\
-                               " (Hz)"
+    # average_time_delta_Hz = (1000000 / average_time_delta)
+    # average_data_rate_string = "Average IMU read rate: " +\/
+                               # str(round(average_time_delta_Hz, 3)) +\
+                               # " (Hz)"
                             
     plotQuaternions(quaternions, cumulative_elapsed_times, 1)
     plotEulerAngles(euler_angles, cumulative_elapsed_times, 2)
