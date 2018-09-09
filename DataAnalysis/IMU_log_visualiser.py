@@ -33,6 +33,17 @@ def quaternionToEulerAngle(w, x, y, z):
     
     return X, Y, Z
 
+
+# To read an IMU log file
+# 1. discard first line
+# Each following line is of format: 
+# Tstamp, gyro_x, y, z, acc_x, y, z, quat_x, y, z, w, temp
+# 2. For each line: 
+    # put Tstamp into list
+    # put gyro x y z into triplet into list
+    # put acc x y z into triplet into list
+    # put quat x y z w into quadruplet into list
+    # put temp into list
 def parseFile(file):
     reader = csv.reader(file, delimiter=',')
 
@@ -152,8 +163,7 @@ def buildQuaternionObjects(quaternions):
 
 def build3DVisualisation(balloon_train_length):
     main_scene = canvas(title="IMU 3D Orientation", height = 900, width = 900)
-    # main_scene.range = balloon_train_length + 3
-    main_scene.range = 3
+    main_scene.range = balloon_train_length / 2 + 2
     main_scene.forward=vector(0.5, -0.5, 1)
 
     objects = []
@@ -161,14 +171,14 @@ def build3DVisualisation(balloon_train_length):
     payload = box(pos = vector(0, 0, 0),\
                   size = vector(4, 0.1, 2))
     objects.append(payload)
-    # balloon_train = arrow(
-                        # pos = vector(0, (balloon_train_length / 2) + 0.5, 0),\
-                        # axis = vector(0, -balloon_train_length, 0),\
-                        # shaftwidth = 0.2)
-    # objects.append(balloon_train)
-    # balloon = sphere(pos = vector(0, (balloon_train_length / 2) + 1.5, 0),\
-                     # radius = 1)
-    # objects.append(balloon)
+    balloon_train = arrow(
+                        pos = vector(0, balloon_train_length, 0),\
+                        axis = vector(0, -balloon_train_length, 0),\
+                        shaftwidth = 0.2)
+    objects.append(balloon_train)
+    balloon = sphere(pos = vector(0, balloon_train_length + 0.5, 0),\
+                     radius = 1)
+    objects.append(balloon)
 
     x_axis = arrow(color = color.red, axis = vector(-3, 0, 0),\
                    shaftwidth = 0.02, fixedwidth = 0.01)
@@ -180,7 +190,7 @@ def build3DVisualisation(balloon_train_length):
     return (main_scene, objects)
 
 def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
-    # payload - objects[0]
+    # objects[0] = payload
     rotation_axis = quaternion_OBJ.get_axis(undefined=[0, 1, 0])
     rotation_angle = quaternion_OBJ.radians
     objects[0].up = vector(0, 1, 0)
@@ -189,7 +199,20 @@ def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
                       axis = vector(rotation_axis[0],\
                                     rotation_axis[1],\
                                     rotation_axis[2]))
-    # objects[0].rotate(angle = rotation_angle)
+
+    # objects[2] = balloon
+    objects[2].up = vector(0, 1, 0)
+    objects[2].axis = vector(1, 0, 0)
+    objects[2].rotate(angle = rotation_angle,\
+                      axis = vector(rotation_axis[0],\
+                                    rotation_axis[1],\
+                                    rotation_axis[2]))
+
+    # objects[1] = balloon train
+    objects[1].axis = proj(vector(0, -balloon_train_length, 0), -objects[2].up)
+
+    objects[0].pos = objects[1].axis + objects[1].pos
+
     return objects
 
 def playback(indices, time_deltas, quaternion_OBJs,\
@@ -199,19 +222,9 @@ def playback(indices, time_deltas, quaternion_OBJs,\
         updateVisualisationObjects(quaternion_OBJs[index], objects,\
                                    balloon_train_length)
 
-# To read a csv
-# 1. discard first line
-# Each following line is of format: 
-# Tstamp, gyro_x, y, z, acc_x, y, z, quat_x, y, z, w, temp
-# 2. For each line: 
-    # put Tstamp into list
-    # put gyro x y z into triplet into list
-    # put acc x y z into triplet into list
-    # put quat x y z w into quadruplet into list
-    # put temp into list
 def main(argv):
     file = open(argv[0])
-    balloon_train_length = int(argv[1])
+    balloon_train_length = float(argv[1])
     
     (total_lines, indices, timestamps, gyro_data,\
      acc_data, quaternions, temperatures)          = parseFile(file)
