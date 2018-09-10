@@ -176,7 +176,7 @@ def build3DVisualisation(balloon_train_length):
                         axis = vector(0, -balloon_train_length, 0),\
                         shaftwidth = 0.2)
     objects.append(balloon_train)
-    balloon = sphere(pos = vector(0, balloon_train_length + 0.5, 0),\
+    balloon = sphere(pos = vector(0, balloon_train_length + 1, 0),\
                      radius = 1)
     objects.append(balloon)
 
@@ -209,7 +209,12 @@ def updateVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
                                     rotation_axis[2]))
 
     # objects[1] = balloon train
-    objects[1].axis = proj(vector(0, -balloon_train_length, 0), -objects[2].up)
+    # non rigid pendulum (just a vector projection)
+    # objects[1].axis = proj(vector(0, -balloon_train_length, 0), -objects[2].up)
+    # rigid pendulum
+    v = -objects[2].up
+    v.mag = balloon_train_length
+    objects[1].axis = v
 
     objects[0].pos = objects[1].axis + objects[1].pos
 
