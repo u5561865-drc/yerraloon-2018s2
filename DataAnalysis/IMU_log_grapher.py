@@ -7,26 +7,16 @@ import datetime
 # each quaternion is stored in the form (w,    x,    y,    z)
 #                                       q[0], q[1], q[2], q[3]
 
-# Method for converting from quaternions to Euler angles, taken from:
-# https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-def quaternionToEulerAngle(w, x, y, z):
-    ysqr = y * y
-    
-    t0 = +2.0 * (w * x + y * z)
-    t1 = +1.0 - 2.0 * (x * x + ysqr)
-    X = math.degrees(math.atan2(t0, t1))
-    
-    t2 = +2.0 * (w * y - z * x)
-    t2 = +1.0 if t2 > +1.0 else t2
-    t2 = -1.0 if t2 < -1.0 else t2
-    Y = math.degrees(math.asin(t2))
-    
-    t3 = +2.0 * (w * z + x * y)
-    t4 = +1.0 - 2.0 * (ysqr + z * z)
-    Z = math.degrees(math.atan2(t3, t4))
-    
-    return X, Y, Z
-
+# To read a csv
+# 1. discard first line
+# Each following line is of format: 
+# Tstamp, gyro_x, y, z, acc_x, y, z, quat_x, y, z, w, temp
+# 2. For each line: 
+    # put Tstamp into list
+    # put gyro x y z into triplet into list
+    # put acc x y z into triplet into list
+    # put quat x y z w into quadruplet into list
+    # put temp into list
 def parseFile(file):
     reader = csv.reader(file, delimiter=',')
 
@@ -80,29 +70,47 @@ def parseFile(file):
 
     return (total_lines, i, tstamp, gyro, acc, quat, temp_c)
 
+# Method for converting from quaternions to Euler angles, taken from:
+# https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+def quaternionToEulerAngle(w, x, y, z):
+    ysqr = y * y
+    
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + ysqr)
+    X = math.degrees(math.atan2(t0, t1))
+    
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    Y = math.degrees(math.asin(t2))
+    
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (ysqr + z * z)
+    Z = math.degrees(math.atan2(t3, t4))
+    
+    return X, Y, Z
+
 def calculateEulerAngles(quaternions):
     euler_angles = []
     for q in quaternions:
         euler_angles.append(quaternionToEulerAngle(q[0], q[1], q[2], q[3]))
     return euler_angles
 
+def quaternionToAxisAngle(quaternion):
+    equation_part = math.sqrt(1 - (quaternion[0] * quaternion[0]))
+    angle = 2 * math.acos(quaternion[0])
+    # need to handle potential divide by zero here
+    if eq_part < 0.001:
+        return (angle, quaternion[1], quaternion[2], quaternion[3])
+    else:
+        return (angle, quaternion[1] / equation_part, 
+                       quaternion[2] / equation_part, 
+                       quaternion[3] / equation_part)
+
 def calculateAxisAngles(quaternions):
     axis_angles = []
     for q in quaternions:
-        eq_part = math.sqrt(1 - (q[0] * q[0]))
-        angle = 2 * math.acos(q[0])
-        # need to handle potential divide by zero here
-        # axis may need to be normalised
-        if eq_part < 0.001:
-            axis_angles.append((angle,\
-                               q[1],\
-                               q[2],\
-                               q[3]))
-        else:
-            axis_angles.append((angle,\
-                               q[1] / eq_part,\
-                               q[2] / eq_part,\
-                               q[3] / eq_part))
+        axis_angles.append(quaternionToAxisAngle(q))
     return axis_angles
 
 def calculateTimeDeltas(timestamps):
@@ -213,16 +221,6 @@ def plotAxisAngles(axis_angles, cumulative_elapsed_times, figure_no):
     plt.ylabel("z")
     plt.xlabel("elapsed seconds") 
 
-# To read a csv
-# 1. discard first line
-# Each following line is of format: 
-# Tstamp, gyro_x, y, z, acc_x, y, z, quat_x, y, z, w, temp
-# 2. For each line: 
-    # put Tstamp into list
-    # put gyro x y z into triplet into list
-    # put acc x y z into triplet into list
-    # put quat x y z w into quadruplet into list
-    # put temp into list
 def main(argv):
     file = open(argv[0])
     
@@ -234,13 +232,7 @@ def main(argv):
     
     (reference_time, average_time_delta,\
      time_deltas, cumulative_elapsed_times) = calculateTimeDeltas(timestamps)
-    
-    # convert data rate to Hz
-    # average_time_delta_Hz = (1000000 / average_time_delta)
-    # average_data_rate_string = "Average IMU read rate: " +\/
-                               # str(round(average_time_delta_Hz, 3)) +\
-                               # " (Hz)"
-                            
+
     plotQuaternions(quaternions, cumulative_elapsed_times, 1)
     plotEulerAngles(euler_angles, cumulative_elapsed_times, 2)
     plotAxisAngles(axis_angles, cumulative_elapsed_times, 3)
