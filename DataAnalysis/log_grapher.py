@@ -1,7 +1,7 @@
 import sys
 import matplotlib.pyplot as plt
-import imu_log
-import quaternion_conv 
+import imu_log_tools as imu
+import quaternion_conversions as quat_conv
 
 def plotQuaternions(quaternions, cumulative_elapsed_times, figure_no):
     plt.figure(figure_no)
@@ -81,13 +81,13 @@ def main(argv):
     file = open(argv[0])
     
     (total_lines, indices, timestamps, gyro_data,
-     acc_data, quaternions, temperatures)          = imu_log.parseFile(file)
+     acc_data, quaternions, temperatures)          = imu.parseFile(file)
     
-    euler_angles = quaternion_conv.calculateEulerAngles(quaternions)
-    axis_angles = quaternion_conv.calculateAxisAngles(quaternions)
+    euler_angles = quat_conv.calculateEulerAngles(quaternions)
+    axis_angles = quat_conv.calculateAxisAngles(quaternions)
     
     (reference_time, average_time_delta, time_deltas, 
-     cumulative_elapsed_times) = imu_log.calculateTimeDeltas(timestamps)
+     cumulative_elapsed_times) = imu.calculateTimeDeltas(timestamps)
 
     plotQuaternions(quaternions, cumulative_elapsed_times, 1)
     plotEulerAngles(euler_angles, cumulative_elapsed_times, 2)

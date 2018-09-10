@@ -2,8 +2,8 @@ import sys
 from pyquaternion import Quaternion
 from vpython import *
 
-import quaternion_conv
-import imu_log
+import quaternion_conversions as quat_conv
+import imu_log_tools as imu
 
 # determines if the payload should be treated as an individual object,
 # or as a pendulum. set via arguments
@@ -164,13 +164,13 @@ def main(argv):
         pendulum_mode = False
 
     (total_lines, indices, timestamps, gyro_data,
-     acc_data, quaternions, temperatures)          = imu_log.parseFile(file)
+     acc_data, quaternions, temperatures)          = imu.parseFile(file)
 
-    # euler_angles = quaternion_conv.calculateEulerAngles(quaternions)
-    # axis_angles = quaternion_conv.calculateAxisAngles(quaternions)
+    # euler_angles = quat_conv.calculateEulerAngles(quaternions)
+    # axis_angles = quat_conv.calculateAxisAngles(quaternions)
     
     (reference_time, average_time_delta, time_deltas, 
-     cumulative_elapsed_times) = imu_log.calculateTimeDeltas(timestamps)
+     cumulative_elapsed_times) = imu.calculateTimeDeltas(timestamps)
 
     quaternion_OBJs = buildQuaternionObjects(quaternions)
 
