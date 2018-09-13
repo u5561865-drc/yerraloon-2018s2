@@ -56,18 +56,18 @@ def update3DVisualisationObjects(quaternion_OBJ, objects, balloon_train_length):
     objects[0].up = vec(0, 1, 0)
     objects[0].axis = vec(1.2, 0, 0)
     objects[0].rotate(angle = rotation_angle,
-                      axis = vector(rotation_axis[0],
-                                    rotation_axis[1],
-                                    rotation_axis[2]))
+                      axis = vec(rotation_axis[0],
+                                 rotation_axis[1],
+                                 rotation_axis[2]))
 
     if pendulum_mode:
         # objects[2] = balloon
         objects[2].up = vector(0, 0, 1)
         objects[2].axis = vector(0, 1, 0)
         objects[2].rotate(angle = rotation_angle,
-                          axis = vector(rotation_axis[0],
-                                        rotation_axis[1],
-                                        rotation_axis[2]))
+                          axis = vec(rotation_axis[0],
+                                     rotation_axis[1],
+                                     rotation_axis[2]))
 
         # objects[1] = balloon train (as a rigid pendulum)
         v = -objects[2].axis
@@ -142,6 +142,20 @@ def update2DVisualisation(objects_2d, quaternion_OBJ, temperature):
     rotation_angle = quaternion_OBJ.radians
 
     # need to make the representations of each axis move
+    # objects_2d[1].axis = 
+    # objects_2d[1].up = 
+    objects_2d[1].rotate(angle = rotation_angle,
+                         axis = vec(rotation_axis[0],
+                                    rotation_axis[1],
+                                    rotation_axis[2]))
+    objects_2d[1].axis = proj(objects_2d[1].axis, vec(-1,0,0))
+    objects_2d[1].axis.mag = 0.2
+    objects_2d[2].rotate(angle = rotation_angle,
+                         axis = vec(rotation_axis[0],
+                                    rotation_axis[1],
+                                    rotation_axis[2]))
+    objects_2d[2].axis = proj(objects_2d[2].axis, vec(1,0,0))
+    objects_2d[2].axis.mag = 0.2
 
 def playback(indices, time_deltas, quaternion_OBJs, objects_3d, 
              balloon_train_length, objects_2d, temperatures):
