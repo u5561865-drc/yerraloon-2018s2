@@ -53,8 +53,8 @@ def parseFile(file):
                 if col_i == 10: # quat w
                     quat.append((float(col),\
                                  float(quat_temp[0]),\
-                                 float(quat_temp[1]),\
-                                 float(quat_temp[2])))
+                                 float(quat_temp[2]),\
+                                 float(quat_temp[1])))
                 if col_i == 11: # temperature
                     temp_c.append(float(col))
                 col_i += 1
@@ -94,5 +94,5 @@ def calculateTimeDeltas(timestamps):
                                # str(round(average_time_delta_Hz, 3)) +\
                                # " (Hz)"
 
-    return (reference_time, average_time_delta,\
+    return (reference_time, average_time_delta,
             time_deltas, cumulative_elapsed_times)

@@ -16,7 +16,8 @@ def buildQuaternionObjects(quaternions):
     quat_OBJs = []
     for q in quaternions:
         # swap y and z axes for visualisation purposes
-        quat_OBJ = Quaternion((q[0], q[1], q[3], q[2]))
+        # now done in the log parsing
+        quat_OBJ = Quaternion((q[0], q[1], q[2], q[3]))
         quat_OBJs.append(quat_OBJ)
     return quat_OBJs
 

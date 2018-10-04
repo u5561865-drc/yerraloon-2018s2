@@ -43,3 +43,12 @@ def parseLog(file):
 
     return (total_lines, indices, sys_tstamps, gps_tstamps, 
             latitudes, longitudes, altitudes)
+
+def calculateTimeDeltas(sys_tstamps, gps_tstamps):
+    # find first timestamp from gps, calculate time offset between system time
+    # and gps time - return this as we may want it to convert times to UTC 
+    # later
+
+    
+
+    # return 
